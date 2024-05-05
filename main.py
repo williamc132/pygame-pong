@@ -3,9 +3,6 @@ import sys
 from settings import *
 from table import Table
 
-# set font
-# font = pygame.font.Font(FONT_NAME, FONT_SIZE)
-
 
 # define game object
 class Game:
@@ -35,6 +32,8 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                if event.type == self.table.RESET_BALL:
+                    self.table.ball_reset()
             self.draw()
             self.update()
 
