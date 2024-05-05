@@ -14,10 +14,12 @@ class Table:
         self.p2 = Paddle(WIDTH - 100 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2)
         self.ball = Ball(WIDTH // 2 - BALL_WIDTH // 2, HEIGHT // 2 - BALL_HEIGHT // 2)
         self.game_over = False
-        self.win_con = 11
+        self.score_limit = 11
         self.winner = None
         self.font = pygame.font.Font(FONT_NAME, FONT_SIZE)
         self.color = pygame.Color(COLOR)
+        self.score_time = pygame.time.get_ticks() - 2000
+        self.RESET_BALL = pygame.USEREVENT + 1
 
     # draw net onto table object
     def draw_net(self):
@@ -53,12 +55,14 @@ class Table:
             self.ball.speed_y *= -1
 
         # collision with left and right side of window
-        if self.ball.rect.right <= 0:
+        if self.ball.rect.right <= 0 and pygame.time.get_ticks() - self.score_time > RESET_DELAY:
             self.p2.score += 1
-            self.ball_reset()
-        if self.ball.rect.left >= WIDTH:
+            self.score_time = pygame.time.get_ticks()
+            self.check_score()
+        if self.ball.rect.left >= WIDTH and pygame.time.get_ticks() - self.score_time > RESET_DELAY:
             self.p1.score += 1
-            self.ball_reset()
+            self.score_time = pygame.time.get_ticks()
+            self.check_score()
 
         # collision with left and right border when game over
         if self.ball.rect.left <= 0 and self.game_over:
@@ -70,10 +74,18 @@ class Table:
         if self.ball.rect.colliderect(self.p1) or self.ball.rect.colliderect(self.p2):
             self.ball.speed_x *= -1
 
-    # reset ball to center if ball moves outside window
+    # reposition ball to center
     def ball_reset(self):
         self.ball.rect.centerx = WIDTH // 2
         self.ball.rect.centery = random.randint(0 + BALL_HEIGHT, HEIGHT - BALL_HEIGHT)
+        self.ball.speed_x *= random.choice([-1, 1])
+        self.ball.speed_y *= random.choice([-1, 1])
+
+    def check_score(self):
+        if self.p1.score < self.score_limit and self.p2.score < self.score_limit:
+            pygame.time.set_timer(self.RESET_BALL, RESET_DELAY, 1)
+        else:
+            self.ball_reset()
 
     # show score for each player
     def display_score(self):
@@ -82,18 +94,18 @@ class Table:
         self.win.blit(left_score, (WIDTH // 4 - 10, 0))
         self.win.blit(right_score, (WIDTH * 3 // 4 - 40, 0))
 
-    # check for event where either player reaches win condition
-    def check_win_con(self):
-        if self.p1.score == self.win_con:
-            self.winner = "P1 WIN!"
-        elif self.p2.score == self.win_con:
-            self.winner = "P2 WIN!"
+    # check for event where either player wins
+    def check_game_over(self):
+        # check if either player reaches score limit
+        if self.p1.score == self.score_limit:
+            self.winner = "P1"
+        elif self.p2.score == self.score_limit:
+            self.winner = "P2"
 
-    # handle event for player wins game
-    def end_game(self):
+        # handle event for player win
         if self.winner is not None:
             self.game_over = True
-            declare = self.font.render(self.winner, False, 'white')
+            declare = self.font.render(f"{self.winner} WIN!", False, 'white')
             self.win.blit(declare, (WIDTH // 2 - declare.get_width() // 2, HEIGHT // 2 - declare.get_height() // 2))
 
     # draw objects from table onto window
@@ -109,5 +121,4 @@ class Table:
         self.ball_collision()
 
         self.display_score()
-        self.check_win_con()
-        self.end_game()
+        self.check_game_over()
