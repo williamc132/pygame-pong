@@ -16,3 +16,5 @@ BALL_SPEED = 5
 # text font
 FONT_NAME = "ataridragonsi.ttf"
 FONT_SIZE = 50
+
+RESET_DELAY = 2000
