@@ -1,5 +1,5 @@
 # game settings
-WIDTH, HEIGHT = 720, 530
+WIDTH, HEIGHT = 640, 480
 FPS = 60
 
 # color
@@ -14,8 +14,8 @@ BALL_WIDTH, BALL_HEIGHT = 10, 10
 BALL_SPEED = 5
 
 # font types
-FONT_NAME = "ataridragonsi.ttf"
-FONT_SIZE = 50
+SCORE_FONT_NAME = "ataridragonsi.ttf"
+SCORE_FONT_SIZE = 50
 
 # ball reset timer
 RESET_DELAY = 2000
