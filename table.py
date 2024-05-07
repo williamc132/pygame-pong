@@ -16,7 +16,7 @@ class Table:
         self.game_over = False
         self.score_limit = 11
         self.winner = None
-        self.font = pygame.font.Font(FONT_NAME, FONT_SIZE)
+        self.score_font = pygame.font.Font(SCORE_FONT_NAME, SCORE_FONT_SIZE)
         self.color = pygame.Color(COLOR)
         self.score_time = pygame.time.get_ticks() - 2000
         self.RESET_BALL = pygame.USEREVENT + 1
@@ -58,14 +58,12 @@ class Table:
         if self.ball.rect.right <= 0 and pygame.time.get_ticks() - self.score_time > RESET_DELAY:
             self.p2.score += 1
             self.score_time = pygame.time.get_ticks()
-            self.ball.rect.centerx = WIDTH // 2
-            self.ball.moving = False
+            self._hide_ball()
             self._check_score()
         if self.ball.rect.left >= WIDTH and pygame.time.get_ticks() - self.score_time > RESET_DELAY:
             self.p1.score += 1
             self.score_time = pygame.time.get_ticks()
-            self.ball.rect.centerx = WIDTH // 2
-            self.ball.moving = False
+            self._hide_ball()
             self._check_score()
 
         # collision with left and right side of window when game over
@@ -86,6 +84,11 @@ class Table:
         self.ball.speed_y *= random.choice([-1, 1])
         self.ball.moving = True
 
+    def _hide_ball(self):
+        self.ball.rect.centerx = WIDTH // 2
+        self.ball.rect.centery = HEIGHT // 2
+        self.ball.moving = False
+
     def _check_score(self):
         if self.p1.score < self.score_limit and self.p2.score < self.score_limit:
             pygame.time.set_timer(self.RESET_BALL, RESET_DELAY, 1)
@@ -94,8 +97,8 @@ class Table:
 
     # show score for each player
     def _display_score(self):
-        left_score = self.font.render(f"{self.p1.score}", False, self.color)
-        right_score = self.font.render(f"{self.p2.score}", False, self.color)
+        left_score = self.score_font.render(f"{self.p1.score}", False, self.color)
+        right_score = self.score_font.render(f"{self.p2.score}", False, self.color)
         self.win.blit(left_score, (WIDTH // 4 - 10, 0))
         self.win.blit(right_score, (WIDTH * 3 // 4 - 40, 0))
 
@@ -110,9 +113,8 @@ class Table:
         # handle event for player win
         if self.winner is not None:
             self.game_over = True
-            declare = self.font.render(f"{self.winner} WIN!", False, 'white')
-            # TODO: adjust font to avoid overlapping net
-            self.win.blit(declare, (WIDTH//2 - declare.get_width()//2, HEIGHT//2 - declare.get_height()//2))
+            declare = self.score_font.render(f"{self.winner} WIN!", False, 'white')
+            self.win.blit(declare, (WIDTH//2 - declare.get_width()//2 + 30, HEIGHT//2 - declare.get_height()//2))
 
     # draw objects from table onto window
     def draw(self):
