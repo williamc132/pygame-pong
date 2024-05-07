@@ -13,8 +13,9 @@ PADDLE_SPEED = 10
 BALL_WIDTH, BALL_HEIGHT = 10, 10
 BALL_SPEED = 5
 
-# text font
+# font types
 FONT_NAME = "ataridragonsi.ttf"
 FONT_SIZE = 50
 
+# ball reset timer
 RESET_DELAY = 2000
