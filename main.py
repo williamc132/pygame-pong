@@ -33,7 +33,7 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 if event.type == self.table.RESET_BALL:
-                    self.table.ball_reset()
+                    self.table.center_ball()
             self.draw()
             self.update()
 
