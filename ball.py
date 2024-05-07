@@ -12,13 +12,16 @@ class Ball:
         self.color = pygame.Color(COLOR)
         self.speed_x = BALL_SPEED
         self.speed_y = BALL_SPEED
+        self.moving = True
 
     # handle ball movement
-    def movement(self):
-        self.rect.x += self.speed_x
-        self.rect.y += self.speed_y
+    def _movement(self):
+        if self.moving:
+            self.rect.x += self.speed_x
+            self.rect.y += self.speed_y
 
     # update ball object
     def update(self, win):
-        self.movement()
-        pygame.draw.rect(win, self.color, self.rect)
+        if self.moving:
+            self._movement()
+            pygame.draw.rect(win, self.color, self.rect)
