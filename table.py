@@ -22,14 +22,14 @@ class Table:
         self.RESET_BALL = pygame.USEREVENT + 1
 
     # draw net onto table object
-    def draw_net(self):
+    def _draw_net(self):
         for i in range(0, HEIGHT, 20):
             if i % 2 == 1:
                 continue
             pygame.draw.rect(self.win, self.color, (WIDTH // 2, i, 1, 10))
 
     # handle paddle movement
-    def move_paddle(self):
+    def _move_paddle(self):
         keys = pygame.key.get_pressed()
 
         # handle left paddle movement
@@ -49,8 +49,8 @@ class Table:
                 self.p2.move_down()
 
     # handle collision between ball and other objects
-    def ball_collision(self):
-        # collision with floor and ceiling
+    def _ball_collision(self):
+        # collision with top and bottom of window
         if self.ball.rect.top <= 0 or self.ball.rect.bottom >= HEIGHT:
             self.ball.speed_y *= -1
 
@@ -58,13 +58,17 @@ class Table:
         if self.ball.rect.right <= 0 and pygame.time.get_ticks() - self.score_time > RESET_DELAY:
             self.p2.score += 1
             self.score_time = pygame.time.get_ticks()
-            self.check_score()
+            self.ball.rect.centerx = WIDTH // 2
+            self.ball.moving = False
+            self._check_score()
         if self.ball.rect.left >= WIDTH and pygame.time.get_ticks() - self.score_time > RESET_DELAY:
             self.p1.score += 1
             self.score_time = pygame.time.get_ticks()
-            self.check_score()
+            self.ball.rect.centerx = WIDTH // 2
+            self.ball.moving = False
+            self._check_score()
 
-        # collision with left and right border when game over
+        # collision with left and right side of window when game over
         if self.ball.rect.left <= 0 and self.game_over:
             self.ball.speed_x *= -1
         if self.ball.rect.right >= WIDTH and self.game_over:
@@ -75,27 +79,28 @@ class Table:
             self.ball.speed_x *= -1
 
     # reposition ball to center
-    def ball_reset(self):
+    def center_ball(self):
         self.ball.rect.centerx = WIDTH // 2
         self.ball.rect.centery = random.randint(0 + BALL_HEIGHT, HEIGHT - BALL_HEIGHT)
         self.ball.speed_x *= random.choice([-1, 1])
         self.ball.speed_y *= random.choice([-1, 1])
+        self.ball.moving = True
 
-    def check_score(self):
+    def _check_score(self):
         if self.p1.score < self.score_limit and self.p2.score < self.score_limit:
             pygame.time.set_timer(self.RESET_BALL, RESET_DELAY, 1)
         else:
-            self.ball_reset()
+            self.center_ball()
 
     # show score for each player
-    def display_score(self):
+    def _display_score(self):
         left_score = self.font.render(f"{self.p1.score}", False, self.color)
         right_score = self.font.render(f"{self.p2.score}", False, self.color)
         self.win.blit(left_score, (WIDTH // 4 - 10, 0))
         self.win.blit(right_score, (WIDTH * 3 // 4 - 40, 0))
 
     # check for event where either player wins
-    def check_game_over(self):
+    def _check_game_over(self):
         # check if either player reaches score limit
         if self.p1.score == self.score_limit:
             self.winner = "P1"
@@ -106,19 +111,20 @@ class Table:
         if self.winner is not None:
             self.game_over = True
             declare = self.font.render(f"{self.winner} WIN!", False, 'white')
-            self.win.blit(declare, (WIDTH // 2 - declare.get_width() // 2, HEIGHT // 2 - declare.get_height() // 2))
+            # TODO: adjust font to avoid overlapping net
+            self.win.blit(declare, (WIDTH//2 - declare.get_width()//2, HEIGHT//2 - declare.get_height()//2))
 
     # draw objects from table onto window
     def draw(self):
-        self.draw_net()
+        self._draw_net()
 
     def update(self):
         self.p1.update(self.win)
         self.p2.update(self.win)
         self.ball.update(self.win)
 
-        self.move_paddle()
-        self.ball_collision()
+        self._move_paddle()
+        self._ball_collision()
 
-        self.display_score()
-        self.check_game_over()
+        self._display_score()
+        self._check_game_over()
