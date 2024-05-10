@@ -34,25 +34,30 @@ class Table:
 
         # handle left paddle movement
         if keys[pygame.K_w]:
-            if self.p1.rect.top >= 15:
+            if self.p1.rect.top >= 20:
                 self.p1.move_up()
         if keys[pygame.K_s]:
-            if self.p1.rect.bottom <= HEIGHT - 15:
+            if self.p1.rect.bottom <= HEIGHT - 20:
                 self.p1.move_down()
 
         # handle right paddle movement
         if keys[pygame.K_UP]:
-            if self.p2.rect.top >= 15:
+            if self.p2.rect.top >= 20:
                 self.p2.move_up()
         if keys[pygame.K_DOWN]:
-            if self.p2.rect.bottom <= HEIGHT - 15:
+            if self.p2.rect.bottom <= HEIGHT - 20:
                 self.p2.move_down()
 
-    # handle collision between ball and other objects
-    def _ball_collision(self):
+    # handle collision between ball and walls
+    def _wall_collision(self):
         # collision with top and bottom of window
         if self.ball.rect.top <= 0 or self.ball.rect.bottom >= HEIGHT:
             self.ball.speed_y *= -1
+
+        # collision with left and right side of window while game over
+        if self.game_over:
+            if self.ball.rect.left <= 0 or self.ball.rect.right >= WIDTH:
+                self.ball.speed_x *= -1
 
         # collision with left and right side of window
         if self.ball.rect.right <= 0 and pygame.time.get_ticks() - self.score_time > RESET_DELAY:
@@ -66,14 +71,34 @@ class Table:
             self._hide_ball()
             self._check_score()
 
-        # collision with left and right side of window when game over
-        if self.ball.rect.left <= 0 and self.game_over:
-            self.ball.speed_x *= -1
-        if self.ball.rect.right >= WIDTH and self.game_over:
+    # handle collision between ball and paddles
+    def _paddle_collision(self):
+        # collision with left paddle
+        if self.ball.rect.colliderect(self.p1) and self.ball.speed_x < 0:
+            if abs(self.ball.rect.left - self.p2.rect.right) < COLLISION_TOLERANCE:
+                self.ball.speed_x *= -1
+            elif abs(self.ball.rect.bottom - self.p1.rect.top) < COLLISION_TOLERANCE and self.ball.speed_y > 0:
+                self.ball.speed_y *= -1
+            elif abs(self.ball.rect.top - self.p1.rect.bottom) < COLLISION_TOLERANCE and self.ball.speed_y < 0:
+                self.ball.speed_y *= -1
+
+        # collision with right paddle
+        if self.ball.rect.colliderect(self.p2) and self.ball.speed_x > 0:
+            if abs(self.ball.rect.right - self.p1.rect.left) < COLLISION_TOLERANCE:
+                self.ball.speed_x *= -1
+            elif abs(self.ball.rect.bottom - self.p2.rect.top) < COLLISION_TOLERANCE and self.ball.speed_y > 0:
+                self.ball.speed_y *= -1
+            elif abs(self.ball.rect.top - self.p2.rect.bottom) < COLLISION_TOLERANCE and self.ball.speed_y < 0:
+                self.ball.speed_y *= -1
+
+    # handle collision between ball and paddles when game over
+    def _postgame_paddle_collision(self):
+        # collision with left paddle while game over
+        if self.ball.rect.colliderect(self.p1):
             self.ball.speed_x *= -1
 
-        # collision with paddles
-        if self.ball.rect.colliderect(self.p1) or self.ball.rect.colliderect(self.p2):
+        # collision with right paddle while game over
+        if self.ball.rect.colliderect(self.p2):
             self.ball.speed_x *= -1
 
     # reposition ball to center
@@ -99,8 +124,14 @@ class Table:
     def _display_score(self):
         left_score = self.score_font.render(f"{self.p1.score}", False, self.color)
         right_score = self.score_font.render(f"{self.p2.score}", False, self.color)
-        self.win.blit(left_score, (WIDTH // 4 - 10, 0))
-        self.win.blit(right_score, (WIDTH * 3 // 4 - 40, 0))
+        if self.p1.score < 10:
+            self.win.blit(left_score, (WIDTH // 4 + 20, 0))
+        else:
+            self.win.blit(left_score, (WIDTH // 4, 0))
+        if self.p2.score < 10:
+            self.win.blit(right_score, (WIDTH * 3 // 4 - 5, 0))
+        else:
+            self.win.blit(right_score, (WIDTH * 3 // 4 - 55, 0))
 
     # check for event where either player wins
     def _check_game_over(self):
@@ -114,19 +145,25 @@ class Table:
         if self.winner is not None:
             self.game_over = True
             declare = self.score_font.render(f"{self.winner} WIN!", False, 'white')
-            self.win.blit(declare, (WIDTH//2 - declare.get_width()//2 + 30, HEIGHT//2 - declare.get_height()//2))
+            self.win.blit(declare, (WIDTH//2 - declare.get_width()//2, HEIGHT//2 - declare.get_height()//2))
 
     # draw objects from table onto window
     def draw(self):
         self._draw_net()
 
+    # update objects on table
     def update(self):
         self.p1.update(self.win)
         self.p2.update(self.win)
         self.ball.update(self.win)
 
         self._move_paddle()
-        self._ball_collision()
+
+        self._wall_collision()
+        if not self.game_over:
+            self._paddle_collision()
+        else:
+            self._postgame_paddle_collision()
 
         self._display_score()
         self._check_game_over()
