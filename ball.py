@@ -1,4 +1,5 @@
 import pygame
+import random
 from settings import *
 
 
@@ -12,7 +13,20 @@ class Ball:
         self.color = pygame.Color(COLOR)
         self.speed_x = BALL_SPEED
         self.speed_y = BALL_SPEED
+        self.max_speed = BALL_MAX_SPEED
+        self.direction = None
+        self._randomize_direction()
         self.moving = True
+
+    # randomize ball direction
+    def _randomize_direction(self):
+        direction = ("left", "right")
+        self.direction = random.choice(direction)
+
+        if self.direction == "left":
+            self.speed_x = BALL_SPEED * -1
+        else:
+            self.speed_x = BALL_SPEED
 
     # handle ball movement
     def _movement(self):
