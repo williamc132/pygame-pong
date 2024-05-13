@@ -71,35 +71,22 @@ class Table:
             self._hide_ball()
             self._check_score()
 
-    # handle collision between ball and paddles
+    # collision between ball and paddles
     def _paddle_collision(self):
-        # collision with left paddle
-        if self.ball.rect.colliderect(self.p1) and self.ball.speed_x < 0:
-            if abs(self.ball.rect.left - self.p2.rect.right) < COLLISION_TOLERANCE:
-                self.ball.speed_x *= -1
-            elif abs(self.ball.rect.bottom - self.p1.rect.top) < COLLISION_TOLERANCE and self.ball.speed_y > 0:
-                self.ball.speed_y *= -1
-            elif abs(self.ball.rect.top - self.p1.rect.bottom) < COLLISION_TOLERANCE and self.ball.speed_y < 0:
-                self.ball.speed_y *= -1
+        self._handle_paddle_collision(self.ball, self.p1, self.ball.speed_x, -1)
+        self._handle_paddle_collision(self.ball, self.p2, self.ball.speed_x, -1)
 
-        # collision with right paddle
-        if self.ball.rect.colliderect(self.p2) and self.ball.speed_x > 0:
-            if abs(self.ball.rect.right - self.p1.rect.left) < COLLISION_TOLERANCE:
-                self.ball.speed_x *= -1
-            elif abs(self.ball.rect.bottom - self.p2.rect.top) < COLLISION_TOLERANCE and self.ball.speed_y > 0:
-                self.ball.speed_y *= -1
-            elif abs(self.ball.rect.top - self.p2.rect.bottom) < COLLISION_TOLERANCE and self.ball.speed_y < 0:
-                self.ball.speed_y *= -1
-
-    # handle collision between ball and paddles when game over
-    def _postgame_paddle_collision(self):
-        # collision with left paddle while game over
-        if self.ball.rect.colliderect(self.p1):
-            self.ball.speed_x *= -1
-
-        # collision with right paddle while game over
-        if self.ball.rect.colliderect(self.p2):
-            self.ball.speed_x *= -1
+    # handle collision between ball and paddles
+    def _handle_paddle_collision(self, ball, paddle, ball_direction, change_direction):
+        if self.ball.rect.colliderect(paddle):
+            if abs(ball.rect.right - paddle.rect.left) < COLLISION_TOLERANCE and ball_direction > 0:
+                ball.speed_x *= change_direction
+            elif abs(ball.rect.left - paddle.rect.right) < COLLISION_TOLERANCE and ball_direction < 0:
+                ball.speed_x *= change_direction
+            elif abs(ball.rect.bottom - paddle.rect.top) < COLLISION_TOLERANCE and self.ball.speed_y > 0:
+                ball.speed_y *= change_direction
+            elif abs(ball.rect.top - paddle.rect.bottom) < COLLISION_TOLERANCE and self.ball.speed_y < 0:
+                ball.speed_y *= change_direction
 
     # reposition ball to center
     def center_ball(self):
@@ -160,10 +147,7 @@ class Table:
         self._move_paddle()
 
         self._wall_collision()
-        if not self.game_over:
-            self._paddle_collision()
-        else:
-            self._postgame_paddle_collision()
+        self._paddle_collision()
 
         self._display_score()
         self._check_game_over()
