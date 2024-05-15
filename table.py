@@ -34,18 +34,18 @@ class Table:
 
         # handle left paddle movement
         if keys[pygame.K_w]:
-            if self.p1.rect.top >= 20:
+            if self.p1.rect.top >= PADDLE_LIMIT:
                 self.p1.move_up()
         if keys[pygame.K_s]:
-            if self.p1.rect.bottom <= HEIGHT - 20:
+            if self.p1.rect.bottom <= HEIGHT - PADDLE_LIMIT:
                 self.p1.move_down()
 
         # handle right paddle movement
         if keys[pygame.K_UP]:
-            if self.p2.rect.top >= 20:
+            if self.p2.rect.top >= PADDLE_LIMIT:
                 self.p2.move_up()
         if keys[pygame.K_DOWN]:
-            if self.p2.rect.bottom <= HEIGHT - 20:
+            if self.p2.rect.bottom <= HEIGHT - PADDLE_LIMIT:
                 self.p2.move_down()
 
     # handle collision between ball and walls
@@ -73,34 +73,46 @@ class Table:
 
     # collision between ball and paddles
     def _paddle_collision(self):
-        self._handle_paddle_collision(self.ball, self.p1, self.ball.speed_x, -1)
-        self._handle_paddle_collision(self.ball, self.p2, self.ball.speed_x, -1)
+        self._handle_paddle_collision(self.ball, self.p1, self.ball.speed_x)
+        self._handle_paddle_collision(self.ball, self.p2, self.ball.speed_x)
 
     # handle collision between ball and paddles
-    def _handle_paddle_collision(self, ball, paddle, ball_direction, change_direction):
+    def _handle_paddle_collision(self, ball, paddle, ball_direction):
         if self.ball.rect.colliderect(paddle):
+            # collision with each side of paddle
             if abs(ball.rect.right - paddle.rect.left) < COLLISION_TOLERANCE and ball_direction > 0:
-                ball.speed_x *= change_direction
+                ball.speed_x *= -1
             elif abs(ball.rect.left - paddle.rect.right) < COLLISION_TOLERANCE and ball_direction < 0:
-                ball.speed_x *= change_direction
+                ball.speed_x *= -1
             elif abs(ball.rect.bottom - paddle.rect.top) < COLLISION_TOLERANCE and self.ball.speed_y > 0:
-                ball.speed_y *= change_direction
+                ball.speed_y *= -1
             elif abs(ball.rect.top - paddle.rect.bottom) < COLLISION_TOLERANCE and self.ball.speed_y < 0:
-                ball.speed_y *= change_direction
+                ball.speed_y *= -1
 
     # reposition ball to center
     def center_ball(self):
         self.ball.rect.centerx = WIDTH // 2
-        self.ball.rect.centery = random.randint(0 + BALL_HEIGHT, HEIGHT - BALL_HEIGHT)
-        self.ball.speed_x *= random.choice([-1, 1])
-        self.ball.speed_y *= random.choice([-1, 1])
+        self.ball.rect.centery = random.randint(BALL_HEIGHT + PADDLE_LIMIT, HEIGHT - BALL_HEIGHT - PADDLE_LIMIT)
+
+        if self.p1.score < self.score_limit and self.p2.score < self.score_limit:
+            self.ball.randomize_direction()
+        else:
+            self._reset_ball_movement()
+
         self.ball.moving = True
 
+    # hide ball animation after point is scored
     def _hide_ball(self):
         self.ball.rect.centerx = WIDTH // 2
         self.ball.rect.centery = HEIGHT // 2
         self.ball.moving = False
 
+    # ball movement when game over
+    def _reset_ball_movement(self):
+        self.ball.speed_x = BALL_SPEED * random.choice([-1, 1])
+        self.ball.speed_y = BALL_SPEED * random.choice([-1, 1])
+
+    # add delay to ball reset after each score
     def _check_score(self):
         if self.p1.score < self.score_limit and self.p2.score < self.score_limit:
             pygame.time.set_timer(self.RESET_BALL, RESET_DELAY, 1)
@@ -132,7 +144,7 @@ class Table:
         if self.winner is not None:
             self.game_over = True
             declare = self.score_font.render(f"{self.winner} WIN!", False, 'white')
-            self.win.blit(declare, (WIDTH//2 - declare.get_width()//2, HEIGHT//2 - declare.get_height()//2))
+            self.win.blit(declare, (WIDTH//2 - declare.get_width()//2 + 30, HEIGHT//2 - declare.get_height()//2))
 
     # draw objects from table onto window
     def draw(self):

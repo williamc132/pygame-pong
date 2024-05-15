@@ -8,6 +8,7 @@ COLOR = "white"
 # paddle dimensions
 PADDLE_WIDTH, PADDLE_HEIGHT = 10, 30
 PADDLE_SPEED = 10
+PADDLE_LIMIT = 20
 
 # ball dimensions
 BALL_WIDTH, BALL_HEIGHT = 10, 10

@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from settings import *
 
 
@@ -14,19 +15,23 @@ class Ball:
         self.speed_x = BALL_SPEED
         self.speed_y = BALL_SPEED
         self.max_speed = BALL_MAX_SPEED
-        self.direction = None
-        self._randomize_direction()
+        self.angle = None
+        self.randomize_direction()
         self.moving = True
 
     # randomize ball direction
-    def _randomize_direction(self):
-        direction = ("left", "right")
-        self.direction = random.choice(direction)
+    def randomize_direction(self):
+        # range of angles
+        angle_ranges = [(0, 60), (120, 240), (300, 360)]
+        range_choice = random.choice(angle_ranges)
+        self.angle = random.randint(*range_choice)
 
-        if self.direction == "left":
-            self.speed_x = BALL_SPEED * -1
-        else:
-            self.speed_x = BALL_SPEED
+        # convert angle to radians
+        angle_rad = math.radians(self.angle)
+
+        # calculate ball speed along x and y
+        self.speed_x = BALL_SPEED * math.cos(angle_rad)
+        self.speed_y = BALL_SPEED * math.sin(angle_rad)
 
     # handle ball movement
     def _movement(self):
