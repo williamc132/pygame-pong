@@ -15,6 +15,7 @@ class Ball:
         self.speed_x = BALL_SPEED
         self.speed_y = BALL_SPEED
         self.max_speed = BALL_MAX_SPEED
+        self.new_speed = BALL_SPEED
         self.angle = None
         self.randomize_direction()
         self.moving = True
@@ -22,7 +23,7 @@ class Ball:
     # randomize ball direction
     def randomize_direction(self):
         # range of angles
-        angle_ranges = [(0, 60), (120, 240), (300, 360)]
+        angle_ranges = [(15, 60), (120, 165), (195, 240), (300, 315)]
         range_choice = random.choice(angle_ranges)
         self.angle = random.randint(*range_choice)
 
@@ -32,6 +33,11 @@ class Ball:
         # calculate ball speed along x and y
         self.speed_x = BALL_SPEED * math.cos(angle_rad)
         self.speed_y = BALL_SPEED * math.sin(angle_rad)
+
+    # increase ball speed after collision with both paddles
+    def increase_speed(self):
+        if self.new_speed < self.max_speed:
+            self.new_speed += 1
 
     # handle ball movement
     def _movement(self):
