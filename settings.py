@@ -16,8 +16,9 @@ BALL_SPEED = 5
 BALL_MAX_SPEED = BALL_SPEED * 2
 
 # font types
-SCORE_FONT_NAME = "ataridragonsi.ttf"
-SCORE_FONT_SIZE = 50
+SCORE_FONT = "fonts/Atari-Dragonsi.ttf"
+TEXT_FONT = "fonts/Atari-Nc33.ttf"
+FONT_SIZE = 50
 
 # ball reset timer
 RESET_DELAY = 2000
